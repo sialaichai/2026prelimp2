@@ -1249,6 +1249,7 @@
           document.getElementById('teacher-authenticated-view')?.classList.remove('hidden');
           renderCohortMetrics();
           renderCohortTable();
+          loadCohortFromGoogleSheet();
         }
       }
     }
@@ -1274,51 +1275,17 @@
       storeTeacherCredentials(salt, hash);
 
       isTeacherAuthenticated = true;
+      failedPinAttempts = 0;
+      if (errEl) errEl.classList.add('hidden');
       document.getElementById('teacher-passcode-gate')?.classList.add('hidden');
       document.getElementById('teacher-authenticated-view')?.classList.remove('hidden');
-      
-      const lockIcon = document.getElementById('teacher-tab-lock-icon');
-      const tabBtn = document.getElementById('tab-btn-teacher');
       if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-emerald-500";
       if (tabBtn) tabBtn.innerHTML = `<i class="fa-solid fa-users-gear text-emerald-600"></i> 5. Teacher Portal <span id="cohort-badge" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-600 text-white font-mono">${cohortSubmissions.length}</span>`;
-
       renderCohortMetrics();
       renderCohortTable();
-      showToast("Master Teacher PIN created and authenticated.", "success");
-    }
-
-    async function unlockTeacherPortal() {
-      if (remainingLockoutSec > 0) return;
-
-      const pinInput = document.getElementById('teacher-pin-input');
-      const errEl = document.getElementById('teacher-pin-error');
-      const errText = document.getElementById('teacher-pin-error-text');
-      const lockIcon = document.getElementById('teacher-tab-lock-icon');
-      const tabBtn = document.getElementById('tab-btn-teacher');
-
-      if (!pinInput) return;
-      const enteredPin = pinInput.value.trim();
-      if (!enteredPin) return;
-
-      const creds = getStoredTeacherCredentials();
-      if (!creds) {
-        switchTab('tab-teacher');
-        return;
-      }
-
-      const testHash = await hashPasscodeWithSalt(enteredPin, creds.salt);
-      if (testHash === creds.hash) {
-        isTeacherAuthenticated = true;
-        failedPinAttempts = 0;
-        if (errEl) errEl.classList.add('hidden');
-        document.getElementById('teacher-passcode-gate')?.classList.add('hidden');
-        document.getElementById('teacher-authenticated-view')?.classList.remove('hidden');
-        if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-emerald-500";
-        if (tabBtn) tabBtn.innerHTML = `<i class="fa-solid fa-users-gear text-emerald-600"></i> 5. Teacher Portal <span id="cohort-badge" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-600 text-white font-mono">${cohortSubmissions.length}</span>`;
-        renderCohortMetrics();
-        renderCohortTable();
-        showToast("Teacher access unlocked securely.", "success");
-      } else {
+      loadCohortFromGoogleSheet();
+      showToast("Teacher access unlocked securely.", "success");
+    } else {
         failedPinAttempts++;
         if (errEl) errEl.classList.remove('hidden');
         if (errText) errText.textContent = `Incorrect PIN (${failedPinAttempts}/3 attempts).`;
@@ -1608,6 +1575,13 @@
 
     async function loadProgressFromCloud(silent = true) {
       try {
+        // Load cached cohort submissions from previous sessions if available
+        const cachedCohort = localStorage.getItem('jpjc_cached_cohort');
+        if (cachedCohort) {
+          cohortSubmissions = JSON.parse(cachedCohort);
+          updateCohortBadge();
+        }
+
         if (isCloudInitialized && cloudDb && currentUserId) {
           const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
           const appId = typeof __app_id !== 'undefined' ? __app_id : 'jpjc-physics-p2-feedback';
@@ -1705,6 +1679,7 @@
         } else {
           cohortSubmissions.unshift({ id: 'local-' + Date.now(), ...submissionPayload });
         }
+        localStorage.setItem('jpjc_cached_cohort', JSON.stringify(cohortSubmissions));
         updateCohortBadge();
         renderCohortMetrics();
         renderCohortTable();
@@ -1913,10 +1888,45 @@
       showToast("Cohort CSV successfully downloaded!", "success");
     }
 
-    function refreshCohortSubmissions() {
+    async function loadCohortFromGoogleSheet(isManualRefresh = false) {
+      const tbody = document.getElementById('cohort-submissions-table-body');
+      if (tbody && cohortSubmissions.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-6 text-indigo-600 font-semibold">
+              <i class="fa-solid fa-spinner fa-spin mr-2"></i> Syncing student submissions from Google Sheet...
+            </td>
+          </tr>
+        `;
+      }
+
+      try {
+        const response = await fetch(GOOGLE_SHEET_ENDPOINT);
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data) && data.length > 0) {
+            cohortSubmissions = data;
+            cohortSubmissions.sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0));
+            localStorage.setItem('jpjc_cached_cohort', JSON.stringify(cohortSubmissions));
+            updateCohortBadge();
+            renderCohortMetrics();
+            renderCohortTable();
+            if (isManualRefresh) showToast(`Successfully retrieved ${data.length} submissions from Google Sheet!`, "success");
+            return;
+          }
+        }
+      } catch (err) {
+        console.debug("Note on fetching from Google Sheet:", err);
+      }
+
+      // If remote fetch returned no records or doGet was not yet configured, retain cached data
       renderCohortMetrics();
       renderCohortTable();
-      showToast("Refreshed cohort submissions list.", "info");
+      if (isManualRefresh) showToast("Checked Google Sheet. No new submissions detected.", "info");
+    }
+
+    function refreshCohortSubmissions() {
+      loadCohortFromGoogleSheet(true);
     }
 
     function exportBackupJSON() {
@@ -3263,6 +3273,7 @@
     window.inspectStudentSubmission = inspectStudentSubmission;
     window.exportCohortCSV = exportCohortCSV;
     window.refreshCohortSubmissions = refreshCohortSubmissions;
+    window.loadCohortFromGoogleSheet = loadCohortFromGoogleSheet;
     window.filterTopicCards = filterTopicCards;
     window.renderTopicAlignmentAnalysis = renderTopicAlignmentAnalysis;
     window.triggerPrint = triggerPrint;
