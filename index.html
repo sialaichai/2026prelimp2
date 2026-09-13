@@ -1135,7 +1135,7 @@
     ];
 
     /* Application Reactive State */
-    const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbwz6x3HdvJdC6z7c59fN19PFPZVtZX3m6mJnZgbagzFC4Sw8j3DXyqerG0BCPTsWjW3/exec";
+    const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbx1H7aC3g35LWdsunOHvEWJ-TMxQEnyOxnKj4JvsYcFnCwfqATldTg55XVq2F9MTYMg/exec";
     const studentScores = {};
     const studentErrorReasons = {};
     const remediationDone = {};
@@ -1276,7 +1276,8 @@
 
       isTeacherAuthenticated = true;
       failedPinAttempts = 0;
-      if (errEl) errEl.classList.add('hidden');
+      const lockIcon = document.getElementById('teacher-tab-lock-icon');
+      const tabBtn = document.getElementById('tab-btn-teacher');
       document.getElementById('teacher-passcode-gate')?.classList.add('hidden');
       document.getElementById('teacher-authenticated-view')?.classList.remove('hidden');
       if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-emerald-500";
@@ -1284,13 +1285,51 @@
       renderCohortMetrics();
       renderCohortTable();
       loadCohortFromGoogleSheet();
-      showToast("Teacher access unlocked securely.", "success");
-    } else {
+      showToast("Teacher passcode established and portal unlocked.", "success");
+    }
+
+    async function unlockTeacherPortal() {
+      const pinInput = document.getElementById('teacher-pin-input');
+      const errEl = document.getElementById('teacher-pin-error');
+      const errText = document.getElementById('teacher-pin-error-text');
+      const enteredPin = pinInput?.value?.trim();
+
+      if (!enteredPin) {
+        if (errEl) errEl.classList.remove('hidden');
+        if (errText) errText.textContent = "Please enter your Teacher PIN.";
+        return;
+      }
+
+      const creds = getStoredTeacherCredentials();
+      if (!creds) {
+        showToast("Please initialize your Teacher PIN first.", "warning");
+        return;
+      }
+
+      const inputHash = await hashPasscodeWithSalt(enteredPin, creds.salt);
+      const lockIcon = document.getElementById('teacher-tab-lock-icon');
+      const tabBtn = document.getElementById('tab-btn-teacher');
+
+      if (inputHash === creds.hash) {
+        isTeacherAuthenticated = true;
+        failedPinAttempts = 0;
+        if (errEl) errEl.classList.add('hidden');
+        document.getElementById('teacher-passcode-gate')?.classList.add('hidden');
+        document.getElementById('teacher-authenticated-view')?.classList.remove('hidden');
+        if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-emerald-500";
+        if (tabBtn) tabBtn.innerHTML = `<i class="fa-solid fa-users-gear text-emerald-600"></i> 5. Teacher Portal <span id="cohort-badge" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-600 text-white font-mono">${cohortSubmissions.length}</span>`;
+        renderCohortMetrics();
+        renderCohortTable();
+        loadCohortFromGoogleSheet();
+        showToast("Teacher access unlocked securely.", "success");
+      } else {
         failedPinAttempts++;
         if (errEl) errEl.classList.remove('hidden');
         if (errText) errText.textContent = `Incorrect PIN (${failedPinAttempts}/3 attempts).`;
-        pinInput.value = '';
-        pinInput.focus();
+        if (pinInput) {
+          pinInput.value = '';
+          pinInput.focus();
+        }
 
         if (failedPinAttempts >= 3) {
           triggerLockout(30);
