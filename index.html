@@ -1135,7 +1135,7 @@
     ];
 
     /* Application Reactive State */
-    const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbx1H7aC3g35LWdsunOHvEWJ-TMxQEnyOxnKj4JvsYcFnCwfqATldTg55XVq2F9MTYMg/exec";
+    const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbw1cTfzQfQy5wTERwRsP9_Nv9h7AmwR_HKCYOUG57Od1C8G9Wi6ri9TI2jspA3vi6WB/exec";
     const studentScores = {};
     const studentErrorReasons = {};
     const remediationDone = {};
@@ -1688,6 +1688,7 @@
       }
 
       const submissionPayload = {
+        id: 'sub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
         userId: currentUserId || 'anon-student',
         studentName: studentName,
         studentClass: studentClass || "Unassigned",
@@ -1714,9 +1715,9 @@
         // Keep local roster in sync for immediate inspection in the teacher portal
         const existingIdx = cohortSubmissions.findIndex(s => s.studentName === studentName && s.studentClass === studentClass);
         if (existingIdx >= 0) {
-          cohortSubmissions[existingIdx] = { id: 'local-' + Date.now(), ...submissionPayload };
+          cohortSubmissions[existingIdx] = submissionPayload;
         } else {
-          cohortSubmissions.unshift({ id: 'local-' + Date.now(), ...submissionPayload });
+          cohortSubmissions.unshift(submissionPayload);
         }
         localStorage.setItem('jpjc_cached_cohort', JSON.stringify(cohortSubmissions));
         updateCohortBadge();
@@ -1829,11 +1830,24 @@
 
       tbody.innerHTML = filtered.map(s => {
         const timeStr = s.submittedAt ? new Date(s.submittedAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown';
-        const gradeBadgeClass = s.grade === 'A' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                                s.grade === 'B' ? 'bg-blue-100 text-blue-800 border-blue-300' :
-                                s.grade === 'C' ? 'bg-indigo-100 text-indigo-800 border-indigo-300' :
-                                s.grade === 'D' || s.grade === 'E' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+        
+        // Sanitize score and percentage against column shifts
+        const rawScore = typeof s.totalScore === 'number' ? s.totalScore : parseInt(String(s.totalScore).replace(/[^\d]/g, '')) || 0;
+        const rawPct = typeof s.percentage === 'number' ? s.percentage : parseFloat(String(s.percentage).replace(/[^\d.]/g, '')) || Number(((rawScore / 75) * 100).toFixed(1));
+        
+        // Sanitize grade to ensure JSON strings never appear in the badge
+        let displayGrade = String(s.grade || '').trim();
+        if (displayGrade.startsWith('{') || displayGrade.length > 4) {
+          displayGrade = rawPct >= 70 ? 'A' : rawPct >= 60 ? 'B' : rawPct >= 55 ? 'C' : rawPct >= 50 ? 'D' : rawPct >= 45 ? 'E' : 'U';
+        }
+
+        const gradeBadgeClass = displayGrade === 'A' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                                displayGrade === 'B' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                                displayGrade === 'C' ? 'bg-indigo-100 text-indigo-800 border-indigo-300' :
+                                displayGrade === 'D' || displayGrade === 'E' ? 'bg-amber-100 text-amber-800 border-amber-300' :
                                 'bg-rose-100 text-rose-800 border-rose-300';
+
+        const subId = s.id || ('local-' + (s.submittedAt || Math.random()));
 
         return `
           <tr class="hover:bg-slate-50 transition-colors">
@@ -1847,21 +1861,21 @@
               ${s.studentTutor || '-'}
             </td>
             <td class="py-2.5 px-3 font-mono font-extrabold text-slate-900">
-              ${s.totalScore} / 75
+              ${rawScore} / 75
             </td>
             <td class="py-2.5 px-3 font-mono font-bold text-slate-700">
-              ${s.percentage}%
+              ${typeof rawPct === 'number' ? rawPct.toFixed(1) : rawPct}%
             </td>
             <td class="py-2.5 px-3">
               <span class="px-2 py-0.5 rounded text-[11px] font-bold border ${gradeBadgeClass}">
-                Grade ${s.grade}
+                Grade ${displayGrade}
               </span>
             </td>
             <td class="py-2.5 px-3 text-slate-400 text-[11px]">
               ${timeStr}
             </td>
             <td class="py-2.5 px-3 text-right">
-              <button onclick="inspectStudentSubmission('${s.id}')" class="px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors">
+              <button onclick="inspectStudentSubmission('${subId}')" class="px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors">
                 <i class="fa-solid fa-eye"></i> Inspect
               </button>
             </td>
@@ -1944,7 +1958,10 @@
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {
-            cohortSubmissions = data;
+            cohortSubmissions = data.map((item, idx) => ({
+              ...item,
+              id: item.id || ('gsheet_' + (item.submittedAt || idx) + '_' + idx)
+            }));
             cohortSubmissions.sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0));
             localStorage.setItem('jpjc_cached_cohort', JSON.stringify(cohortSubmissions));
             updateCohortBadge();
