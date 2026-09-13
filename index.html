@@ -1114,6 +1114,26 @@
       });
     });
 
+    /* Physical Exam Booklet Page Groups with [ ] Brackets and Page References */
+    const BOOKLET_PAGE_GROUPS = [
+      { id: 1, qNum: 1, pageNum: "Page 4", label: "[ 1(a), 1(b)(i) ]", parts: ["1(a)", "1(b)(i)"] },
+      { id: 2, qNum: 1, pageNum: "Page 5", label: "[ 1(b)(ii) ]", parts: ["1(b)(ii)"] },
+      { id: 3, qNum: 2, pageNum: "Page 6", label: "[ 2(a), 2(b), 2(c)(i) ]", parts: ["2(a)", "2(b)", "2(c)(i)"] },
+      { id: 4, qNum: 2, pageNum: "Page 7", label: "[ 2(c)(ii), 2(d) ]", parts: ["2(c)(ii)", "2(d)"] },
+      { id: 5, qNum: 3, pageNum: "Page 8", label: "[ 3(a), 3(b) ]", parts: ["3(a)", "3(b)"] },
+      { id: 6, qNum: 3, pageNum: "Page 9", label: "[ 3(c)(i), 3(c)(ii), 3(c)(iii) ]", parts: ["3(c)(i)", "3(c)(ii)", "3(c)(iii)"] },
+      { id: 7, qNum: 4, pageNum: "Page 11", label: "[ 4(a)(i), 4(a)(ii), 4(a)(iii) ]", parts: ["4(a)(i)", "4(a)(ii)", "4(a)(iii)"] },
+      { id: 8, qNum: 4, pageNum: "Page 12", label: "[ 4(b)(i), 4(b)(ii) ]", parts: ["4(b)(i)", "4(b)(ii)"] },
+      { id: 9, qNum: 5, pageNum: "Page 13", label: "[ 5(a) ]", parts: ["5(a)"] },
+      { id: 10, qNum: 5, pageNum: "Page 14", label: "[ 5(b)(i), 5(b)(ii), 5(b)(iii) ]", parts: ["5(b)(i)", "5(b)(ii)", "5(b)(iii)"] },
+      { id: 11, qNum: 5, pageNum: "Page 15", label: "[ 5(c) ]", parts: ["5(c)"] },
+      { id: 12, qNum: 6, pageNum: "Page 16", label: "[ 6(a), 6(b), 6(c), 6(d)(i) ]", parts: ["6(a)", "6(b)", "6(c)", "6(d)(i)"] },
+      { id: 13, qNum: 6, pageNum: "Page 17", label: "[ 6(d)(ii), 6(d)(iii) ]", parts: ["6(d)(ii)", "6(d)(iii)"] },
+      { id: 14, qNum: 7, pageNum: "Page 21", label: "[ 7(a)(i), 7(a)(ii), 7(a)(iii), 7(b)(i) ]", parts: ["7(a)(i)", "7(a)(ii)", "7(a)(iii)", "7(b)(i)"] },
+      { id: 15, qNum: 7, pageNum: "Page 22", label: "[ 7(b)(ii), 7(b)(iii), 7(b)(iv), 7(c)(i) ]", parts: ["7(b)(ii)", "7(b)(iii)", "7(b)(iv)", "7(c)(i)"] },
+      { id: 16, qNum: 7, pageNum: "Page 23", label: "[ 7(c)(ii), 7(d)(i), 7(d)(ii) ]", parts: ["7(c)(ii)", "7(d)(i)", "7(d)(ii)"] }
+    ];
+
     /* Application Reactive State */
     const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbwz6x3HdvJdC6z7c59fN19PFPZVtZX3m6mJnZgbagzFC4Sw8j3DXyqerG0BCPTsWjW3/exec";
     const studentScores = {};
@@ -1945,82 +1965,137 @@
           qTotalEarned += (studentScores[p.id] || 0);
         });
 
+        // Find all page groups belonging to this question
+        const questionPageGroups = BOOKLET_PAGE_GROUPS.filter(pg => pg.qNum === q.num);
+
         return `
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all">
-            <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+            <!-- Question Header Bar -->
+            <div class="px-5 py-3.5 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center gap-2.5">
                 <span class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-xs">
                   Q${q.num}
                 </span>
                 <div>
-                  <h3 class="font-extrabold text-sm text-slate-800">${q.title}</h3>
-                  <div class="flex items-center gap-2 text-[11px] text-slate-500">
-                    <span class="font-semibold text-blue-700">${q.topic}</span>
+                  <h3 class="font-extrabold text-sm text-white">${q.title}</h3>
+                  <div class="flex items-center gap-2 text-[11px] text-slate-300">
+                    <span class="font-semibold text-blue-300">${q.topic}</span>
                     <span>•</span>
-                    <span class="font-mono">${q.syllabusRef}</span>
+                    <span class="font-mono text-slate-400">${q.syllabusRef}</span>
                   </div>
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold text-slate-500">Subtotal:</span>
-                <span class="font-mono font-extrabold text-sm px-2.5 py-1 rounded-lg ${qTotalEarned === qMax ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-800'}">
+                <span class="text-xs font-semibold text-slate-300">Question Subtotal:</span>
+                <span class="font-mono font-extrabold text-sm px-2.5 py-1 rounded-lg ${qTotalEarned === qMax ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-white border border-slate-700'}">
                   ${qTotalEarned} / ${qMax} marks
                 </span>
               </div>
             </div>
 
-            <div class="p-4 sm:p-5 divide-y divide-slate-100 space-y-4">
-              ${q.parts.map(part => {
-                const score = studentScores[part.id] || 0;
-                const isLost = score < part.marks;
-                const errReason = studentErrorReasons[part.id] || "";
+            <!-- Page Groups with Alternating Colors -->
+            <div class="p-3 sm:p-4 space-y-3.5">
+              ${questionPageGroups.map((pageGroup, pgIndex) => {
+                // Calculate page subtotal
+                let pageEarned = 0;
+                let pageMax = 0;
+                const pageParts = pageGroup.parts.map(pid => ALL_PARTS.find(p => p.id === pid)).filter(Boolean);
+                pageParts.forEach(part => {
+                  pageMax += part.marks;
+                  pageEarned += (studentScores[part.id] || 0);
+                });
+
+                // Alternate background styling based on page group ID (1 to 16)
+                const isEvenPage = (pageGroup.id % 2 === 0);
+                const pageContainerClass = isEvenPage 
+                  ? 'bg-blue-50/45 border-blue-200/90 shadow-xs' 
+                  : 'bg-white border-slate-200/90 shadow-xs';
+                
+                const pageBadgeClass = isEvenPage
+                  ? 'bg-blue-600 text-white border-blue-700 shadow-xs'
+                  : 'bg-slate-800 text-white border-slate-900 shadow-xs';
+
+                const subtotalBadgeClass = pageEarned === pageMax
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                  : 'bg-slate-200 text-slate-800 border-slate-300';
 
                 return `
-                  <div class="pt-4 first:pt-0">
-                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                      <div class="space-y-1 max-w-2xl">
-                        <div class="flex items-center gap-2 flex-wrap">
-                          <span class="font-mono font-extrabold text-xs text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
-                            Part ${part.id}
-                          </span>
-                          <span class="font-bold text-xs text-slate-800">${part.name}</span>
-                          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${getBloomBadgeClass(part.bloom)}">
-                            ${part.bloom}
-                          </span>
-                        </div>
-                        <p class="text-xs text-slate-600 leading-relaxed">${part.description}</p>
+                  <div class="rounded-xl border ${pageContainerClass} p-3.5 sm:p-4 transition-all">
+                    <!-- Page Group Indicator Header -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-3 border-b ${isEvenPage ? 'border-blue-200/70' : 'border-slate-200/70'}">
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs font-black font-mono tracking-wide px-2.5 py-1 rounded-lg border ${pageBadgeClass} flex items-center gap-1.5">
+                          <i class="fa-regular fa-file-lines text-[11px]"></i> ${pageGroup.label}
+                        </span>
+                        <span class="text-[11px] font-bold text-slate-500">
+                          (Paper ${pageGroup.pageNum})
+                        </span>
                       </div>
-
-                      <div class="flex items-center gap-2 shrink-0">
-                        <div class="flex items-center gap-1">
-                          ${Array.from({ length: part.marks + 1 }).map((_, m) => `
-                            <button type="button" onclick="setPartScore('${part.id}', ${m})" class="w-8 h-8 rounded-lg text-xs font-bold font-mono transition-all ${score === m ? 'bg-blue-600 text-white shadow-xs ring-2 ring-blue-300 scale-105' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'}">
-                              ${m}
-                            </button>
-                          `).join('')}
-                        </div>
-                        <div class="flex items-center gap-1 font-mono text-xs text-slate-600 pl-1 border-l border-slate-200">
-                          <input id="input-${part.id}" type="number" min="0" max="${part.marks}" value="${score}" onchange="setPartScore('${part.id}', parseInt(this.value) || 0)" class="w-12 px-2 py-1 text-center font-bold border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none">
-                          <span class="text-slate-400">/ ${part.marks}</span>
-                        </div>
+                      <div class="flex items-center gap-1.5 font-mono text-xs">
+                        <span class="text-[11px] font-semibold text-slate-500 font-sans">Page Score:</span>
+                        <span class="px-2 py-0.5 rounded-md font-bold border ${subtotalBadgeClass}">
+                          ${pageEarned} / ${pageMax}m
+                        </span>
                       </div>
                     </div>
 
-                    ${isLost ? `
-                      <div class="mt-2.5 pt-2 border-t border-dashed border-slate-200 flex flex-wrap items-center gap-2 bg-amber-50/60 p-2 rounded-xl text-xs">
-                        <span class="text-amber-800 font-semibold text-[11px] flex items-center gap-1">
-                          <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Mark Lost (${part.marks - score}m). Diagnose Root Cause:
-                        </span>
-                        <select onchange="setErrorReason('${part.id}', this.value)" class="text-xs py-1 px-2.5 rounded-lg border border-amber-300 bg-white text-slate-700 focus:ring-1 focus:ring-amber-500 focus:outline-none font-medium">
-                          <option value="">Select reason...</option>
-                          <option value="careless" ${errReason === 'careless' ? 'selected' : ''}>Careless / Units / S.F.</option>
-                          <option value="recall" ${errReason === 'recall' ? 'selected' : ''}>Formula / Definition Recall</option>
-                          <option value="concept" ${errReason === 'concept' ? 'selected' : ''}>Concept / Mechanism Gap</option>
-                          <option value="command" ${errReason === 'command' ? 'selected' : ''}>Command Word Execution</option>
-                          <option value="time" ${errReason === 'time' ? 'selected' : ''}>Time Pressure / Incomplete</option>
-                        </select>
-                      </div>
-                    ` : ''}
+                    <!-- Question Parts inside this Page Group -->
+                    <div class="divide-y ${isEvenPage ? 'divide-blue-200/50' : 'divide-slate-100'} space-y-3.5">
+                      ${pageParts.map((part, partIdx) => {
+                        const score = studentScores[part.id] || 0;
+                        const isLost = score < part.marks;
+                        const errReason = studentErrorReasons[part.id] || "";
+
+                        return `
+                          <div class="${partIdx > 0 ? 'pt-3.5' : ''}">
+                            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                              <div class="space-y-1 max-w-2xl">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                  <span class="font-mono font-extrabold text-xs text-blue-700 bg-white px-2 py-0.5 rounded-md border border-blue-300 shadow-2xs">
+                                    Part ${part.id}
+                                  </span>
+                                  <span class="font-bold text-xs text-slate-800">${part.name}</span>
+                                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${getBloomBadgeClass(part.bloom)}">
+                                    ${part.bloom}
+                                  </span>
+                                </div>
+                                <p class="text-xs text-slate-600 leading-relaxed">${part.description}</p>
+                              </div>
+
+                              <div class="flex items-center gap-2 shrink-0 bg-white/80 p-1 rounded-xl border border-slate-200/80">
+                                <div class="flex items-center gap-1">
+                                  ${Array.from({ length: part.marks + 1 }).map((_, m) => `
+                                    <button type="button" onclick="setPartScore('${part.id}', ${m})" class="w-8 h-8 rounded-lg text-xs font-bold font-mono transition-all ${score === m ? 'bg-blue-600 text-white shadow-xs ring-2 ring-blue-300 scale-105' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'}">
+                                      ${m}
+                                    </button>
+                                  `).join('')}
+                                </div>
+                                <div class="flex items-center gap-1 font-mono text-xs text-slate-600 pl-1 border-l border-slate-200">
+                                  <input id="input-${part.id}" type="number" min="0" max="${part.marks}" value="${score}" onchange="setPartScore('${part.id}', parseInt(this.value) || 0)" class="w-12 px-2 py-1 text-center font-bold border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white">
+                                  <span class="text-slate-400">/ ${part.marks}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            ${isLost ? `
+                              <div class="mt-2.5 pt-2 border-t border-dashed border-slate-300 flex flex-wrap items-center gap-2 bg-amber-50/80 p-2 rounded-xl text-xs">
+                                <span class="text-amber-800 font-semibold text-[11px] flex items-center gap-1">
+                                  <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Mark Lost (${part.marks - score}m). Diagnose Root Cause:
+                                </span>
+                                <select onchange="setErrorReason('${part.id}', this.value)" class="text-xs py-1 px-2.5 rounded-lg border border-amber-300 bg-white text-slate-700 focus:ring-1 focus:ring-amber-500 focus:outline-none font-medium">
+                                  <option value="">Select reason...</option>
+                                  <option value="careless" ${errReason === 'careless' ? 'selected' : ''}>Careless / Units / S.F.</option>
+                                  <option value="recall" ${errReason === 'recall' ? 'selected' : ''}>Formula / Definition Recall</option>
+                                  <option value="concept" ${errReason === 'concept' ? 'selected' : ''}>Concept / Mechanism Gap</option>
+                                  <option value="command" ${errReason === 'command' ? 'selected' : ''}>Command Word Execution</option>
+                                  <option value="time" ${errReason === 'time' ? 'selected' : ''}>Time Pressure / Incomplete</option>
+                                </select>
+                              </div>
+                            ` : ''}
+                          </div>
+                        `;
+                      }).join('')}
+                    </div>
                   </div>
                 `;
               }).join('')}
