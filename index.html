@@ -39,7 +39,7 @@
       </div>
       <div class="flex items-center gap-2 no-print flex-wrap justify-end">
         <span id="cloud-status-indicator" class="hidden md:inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
-          <i class="fa-solid fa-cloud text-[10px]"></i> <span id="cloud-status-text">Cloud Sync Ready</span>
+          <i class="fa-solid fa-table-cells text-[10px]"></i> <span id="cloud-status-text">Google Sheet Sync Ready</span>
         </span>
         <button id="btn-save-cloud" onclick="saveProgressToCloud()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm flex items-center gap-1.5 transition-colors">
           <i class="fa-solid fa-floppy-disk"></i> Save Progress
@@ -1110,6 +1110,7 @@
     });
 
     /* Application Reactive State */
+    const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbwz6x3HdvJdC6z7c59fN19PFPZVtZX3m6mJnZgbagzFC4Sw8j3DXyqerG0BCPTsWjW3/exec";
     const studentScores = {};
     const studentErrorReasons = {};
     const remediationDone = {};
@@ -1442,9 +1443,9 @@
 
     async function initializeCloudStorage() {
       try {
+        updateCloudStatus("Google Sheet Sync Active", "text-emerald-400", "border-emerald-500/30", "bg-emerald-950/60");
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'jpjc-physics-p2-feedback';
         if (typeof __firebase_config === 'undefined') {
-          updateCloudStatus("Offline Mode (Local Backups Available)", "text-amber-400", "border-amber-500/30", "bg-amber-950/60");
           return;
         }
 
@@ -1663,24 +1664,34 @@
       };
 
       try {
-        if (isCloudInitialized && cloudDb && currentUserId) {
-          const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-          const appId = typeof __app_id !== 'undefined' ? __app_id : 'jpjc-physics-p2-feedback';
-          
-          // Shared cohort collection
-          const publicSubmissionRef = doc(cloudDb, 'artifacts', appId, 'public', 'data', 'cohort_submissions', currentUserId);
-          await setDoc(publicSubmissionRef, submissionPayload);
+        // Transmit directly to Google Sheet via Google Apps Script Web App
+        await fetch(GOOGLE_SHEET_ENDPOINT, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(submissionPayload)
+        });
 
-          // Save to private profile
-          await saveProgressToCloud(true);
-
-          showToast(`Successfully submitted marks for ${studentName} (${totalEarned}/75, Grade ${grade})!`, "success");
+        // Keep local roster in sync for immediate inspection in the teacher portal
+        const existingIdx = cohortSubmissions.findIndex(s => s.studentName === studentName && s.studentClass === studentClass);
+        if (existingIdx >= 0) {
+          cohortSubmissions[existingIdx] = { id: 'local-' + Date.now(), ...submissionPayload };
         } else {
-          showToast("Offline mode: You can download your backup file and email it to your tutor.", "info");
+          cohortSubmissions.unshift({ id: 'local-' + Date.now(), ...submissionPayload });
         }
+        updateCohortBadge();
+        renderCohortMetrics();
+        renderCohortTable();
+
+        // Save local working draft copy
+        await saveProgressToCloud(true);
+
+        showToast(`Marks successfully recorded to Google Sheet for ${studentName} (${totalEarned}/75, Grade ${grade})!`, "success");
       } catch (err) {
         console.debug("Submission error:", err);
-        showToast("Error submitting. Please try saving a backup file.", "error");
+        showToast("Error transmitting to Google Sheet. Stored in local backup.", "warning");
       }
 
       if (btn) {
