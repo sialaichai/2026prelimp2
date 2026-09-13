@@ -73,7 +73,7 @@
 
     <!-- Student Information Card -->
     <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
             <i class="fa-solid fa-user-graduate text-blue-500 mr-1"></i> Student Name
@@ -82,21 +82,22 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
-            <i class="fa-solid fa-id-card text-blue-500 mr-1"></i> Class / Index No.
+            <i class="fa-solid fa-id-card text-blue-500 mr-1"></i> Class
           </label>
-          <input type="text" id="student-class" placeholder="e.g. 26S01 / 18" oninput="handleStudentFieldChange()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white transition-all">
+          <input type="text" id="student-class" placeholder="e.g. 26S01" oninput="handleStudentFieldChange()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white transition-all">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
             <i class="fa-solid fa-chalkboard-user text-blue-500 mr-1"></i> Physics Tutor
           </label>
-          <input type="text" id="student-tutor" placeholder="e.g. Mr Tan / Dr Lim" oninput="handleStudentFieldChange()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white transition-all">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
-            <i class="fa-solid fa-hashtag text-indigo-500 mr-1"></i> Teacher / Group Code
-          </label>
-          <input type="text" id="student-cohort-code" placeholder="e.g. TAN2026 or 26S01" oninput="handleStudentFieldChange()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 focus:bg-white uppercase font-mono font-semibold transition-all">
+          <select id="student-tutor" onchange="handleStudentFieldChange()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white transition-all font-medium">
+            <option value="">Select Tutor...</option>
+            <option value="Mr Lee">Mr Lee</option>
+            <option value="Mr Oh">Mr Oh</option>
+            <option value="Mr Pang">Mr Pang</option>
+            <option value="Mr Sia">Mr Sia</option>
+            <option value="Mr Tan">Mr Tan</option>
+          </select>
         </div>
       </div>
     </div>
@@ -534,14 +535,19 @@
         <!-- Filter & Search Controls -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
-            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Teacher / Group Code</label>
-            <select id="cohort-group-filter" onchange="renderCohortTable()" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500 focus:outline-none bg-white font-mono font-semibold">
-              <option value="ALL">All Cohorts / Groups</option>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Filter by Tutor</label>
+            <select id="cohort-tutor-filter" onchange="renderCohortTable()" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500 focus:outline-none bg-white font-medium">
+              <option value="ALL">All Tutors</option>
+              <option value="Mr Lee">Mr Lee</option>
+              <option value="Mr Oh">Mr Oh</option>
+              <option value="Mr Pang">Mr Pang</option>
+              <option value="Mr Sia">Mr Sia</option>
+              <option value="Mr Tan">Mr Tan</option>
             </select>
           </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Search Student</label>
-            <input type="text" id="cohort-search-input" oninput="renderCohortTable()" placeholder="Search by name or index..." class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+            <input type="text" id="cohort-search-input" oninput="renderCohortTable()" placeholder="Search by name or class..." class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500 focus:outline-none">
           </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Filter by Class</label>
@@ -568,8 +574,7 @@
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
                 <th class="py-2.5 px-3">Student Name</th>
-                <th class="py-2.5 px-3">Group Code</th>
-                <th class="py-2.5 px-3">Class / Index</th>
+                <th class="py-2.5 px-3">Class</th>
                 <th class="py-2.5 px-3">Tutor</th>
                 <th class="py-2.5 px-3">Score (/75)</th>
                 <th class="py-2.5 px-3">Percentage</th>
@@ -1503,7 +1508,6 @@
         studentName: document.getElementById('student-name')?.value || "",
         studentClass: document.getElementById('student-class')?.value || "",
         studentTutor: document.getElementById('student-tutor')?.value || "",
-        cohortCode: (document.getElementById('student-cohort-code')?.value || "GENERAL").trim().toUpperCase(),
         scores: { ...studentScores },
         errorReasons: { ...studentErrorReasons },
         remediationDone: { ...remediationDone },
@@ -1525,10 +1529,6 @@
       if (data.studentTutor !== undefined) {
         const el = document.getElementById('student-tutor');
         if (el) el.value = data.studentTutor;
-      }
-      if (data.cohortCode !== undefined) {
-        const el = document.getElementById('student-cohort-code');
-        if (el) el.value = data.cohortCode;
       }
 
       if (data.scores) {
@@ -1624,11 +1624,16 @@
       const studentName = document.getElementById('student-name')?.value?.trim();
       const studentClass = document.getElementById('student-class')?.value?.trim();
       const studentTutor = document.getElementById('student-tutor')?.value?.trim();
-      const cohortCode = (document.getElementById('student-cohort-code')?.value || "GENERAL").trim().toUpperCase();
 
       if (!studentName) {
         showToast("Please enter your Student Name before submitting.", "warning");
         document.getElementById('student-name')?.focus();
+        return;
+      }
+
+      if (!studentTutor) {
+        showToast("Please select your Physics Tutor before submitting.", "warning");
+        document.getElementById('student-tutor')?.focus();
         return;
       }
 
@@ -1654,7 +1659,6 @@
         studentName: studentName,
         studentClass: studentClass || "Unassigned",
         studentTutor: studentTutor || "Unassigned",
-        cohortCode: cohortCode || "GENERAL",
         totalScore: totalEarned,
         percentage: Number(percentage.toFixed(1)),
         grade: grade,
@@ -1711,8 +1715,8 @@
       const distEl = document.getElementById('cohort-distinction-rate');
       const passEl = document.getElementById('cohort-pass-rate');
 
-      const selectedGroup = document.getElementById('cohort-group-filter')?.value || 'ALL';
-      const activeList = cohortSubmissions.filter(s => selectedGroup === 'ALL' || (s.cohortCode || 'GENERAL') === selectedGroup);
+      const selectedTutor = document.getElementById('cohort-tutor-filter')?.value || 'ALL';
+      const activeList = cohortSubmissions.filter(s => selectedTutor === 'ALL' || s.studentTutor === selectedTutor);
 
       const total = activeList.length;
       if (totalCountEl) totalCountEl.textContent = total;
@@ -1742,22 +1746,6 @@
       if (distEl) distEl.textContent = distPct.toFixed(1) + "%";
       if (passEl) passEl.textContent = passPct.toFixed(1) + "%";
 
-      // Update group filter options dynamically
-      const groupFilter = document.getElementById('cohort-group-filter');
-      if (groupFilter) {
-        const currentSelection = groupFilter.value;
-        const groups = new Set();
-        cohortSubmissions.forEach(s => {
-          if (s.cohortCode) groups.add(s.cohortCode);
-        });
-
-        let groupOptions = '<option value="ALL">All Cohorts / Groups</option>';
-        Array.from(groups).sort().forEach(g => {
-          groupOptions += `<option value="${g}" ${currentSelection === g ? 'selected' : ''}>Group: ${g}</option>`;
-        });
-        groupFilter.innerHTML = groupOptions;
-      }
-
       // Update class filter dropdown options
       const classFilter = document.getElementById('cohort-class-filter');
       if (classFilter) {
@@ -1779,24 +1767,24 @@
       const tbody = document.getElementById('cohort-submissions-table-body');
       if (!tbody) return;
 
-      const groupFilter = document.getElementById('cohort-group-filter')?.value || 'ALL';
+      const tutorFilter = document.getElementById('cohort-tutor-filter')?.value || 'ALL';
       const searchTerm = (document.getElementById('cohort-search-input')?.value || '').toLowerCase().trim();
       const classFilter = document.getElementById('cohort-class-filter')?.value || 'ALL';
       const gradeFilter = document.getElementById('cohort-grade-filter')?.value || 'ALL';
 
       let filtered = cohortSubmissions.filter(s => {
-        const matchesGroup = (groupFilter === 'ALL') || ((s.cohortCode || 'GENERAL') === groupFilter);
+        const matchesTutor = (tutorFilter === 'ALL') || (s.studentTutor === tutorFilter);
         const matchesName = (s.studentName || '').toLowerCase().includes(searchTerm) || 
                             (s.studentClass || '').toLowerCase().includes(searchTerm);
         const matchesClass = (classFilter === 'ALL') || (s.studentClass === classFilter);
         const matchesGrade = (gradeFilter === 'ALL') || (s.grade === gradeFilter);
-        return matchesGroup && matchesName && matchesClass && matchesGrade;
+        return matchesTutor && matchesName && matchesClass && matchesGrade;
       });
 
       if (filtered.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="text-center py-8 text-slate-400">
+            <td colspan="8" class="text-center py-8 text-slate-400">
               <i class="fa-solid fa-inbox text-2xl mb-1 block"></i>
               No student submissions match the current filters.
             </td>
@@ -1818,15 +1806,10 @@
             <td class="py-2.5 px-3 font-bold text-slate-800">
               ${s.studentName || 'Anonymous'}
             </td>
-            <td class="py-2.5 px-3 font-mono font-bold text-indigo-600 text-[11px]">
-              <span class="px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200">
-                ${s.cohortCode || 'GENERAL'}
-              </span>
-            </td>
             <td class="py-2.5 px-3 text-slate-600 font-mono">
               ${s.studentClass || '-'}
             </td>
-            <td class="py-2.5 px-3 text-slate-600">
+            <td class="py-2.5 px-3 text-slate-700 font-semibold">
               ${s.studentTutor || '-'}
             </td>
             <td class="py-2.5 px-3 font-mono font-extrabold text-slate-900">
@@ -2079,10 +2062,10 @@
       });
       const nameInput = document.getElementById('student-name');
       const classInput = document.getElementById('student-class');
-      const tutorInput = document.getElementById('student-tutor');
+      const tutorSelect = document.getElementById('student-tutor');
       if (nameInput) nameInput.value = '';
       if (classInput) classInput.value = '';
-      if (tutorInput) tutorInput.value = '';
+      if (tutorSelect) tutorSelect.value = '';
 
       updateAppCalculations();
       renderQuestionInputCards();
@@ -2930,7 +2913,6 @@
       const sName = document.getElementById('student-name')?.value?.trim() || "Anonymous Student";
       const sClass = document.getElementById('student-class')?.value?.trim() || "Unassigned";
       const sTutor = document.getElementById('student-tutor')?.value?.trim() || "Unassigned";
-      const sGroup = document.getElementById('student-cohort-code')?.value?.trim() || "GENERAL";
       const printDate = new Date().toLocaleDateString('en-SG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
       const bloomStats = computeBloomStats();
@@ -2948,7 +2930,6 @@
             </div>
             <div class="text-right">
               <span class="text-[11px] text-slate-500 font-mono block">Date: ${printDate}</span>
-              <span class="inline-block px-2.5 py-0.5 rounded bg-slate-900 text-white font-mono text-xs font-bold">Group: ${sGroup}</span>
             </div>
           </div>
 
@@ -2959,7 +2940,7 @@
               <span class="text-sm font-black text-slate-900">${sName}</span>
             </div>
             <div>
-              <span class="text-[10px] font-bold uppercase text-slate-500 block">Class / Index</span>
+              <span class="text-[10px] font-bold uppercase text-slate-500 block">Class</span>
               <span class="text-sm font-mono font-bold text-slate-800">${sClass}</span>
             </div>
             <div>
