@@ -313,6 +313,15 @@
             <button type="button" onclick="filterTopicAdvice('consolidate')" id="topic-filter-consolidate" class="px-3 py-1 rounded-lg font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Consolidate (50-69%)</button>
           </div>
         </div>
+
+        <!-- Pedagogical Perspective Banner -->
+        <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-900 text-xs flex items-center gap-2.5">
+          <i class="fa-solid fa-shield-halved text-amber-600 text-sm shrink-0"></i>
+          <span>
+            <strong>Pedagogical Note:</strong> Ratings reflect execution on the <em>specific question contexts</em> in this paper. A <strong>"Secure in this Paper"</strong> rating confirms sound execution here, but does not substitute for thorough revision across all syllabus permutations.
+          </span>
+        </div>
+
         <div id="topic-alignment-cards" class="grid grid-cols-1 gap-5">
           <!-- Dynamically populated -->
         </div>
@@ -940,7 +949,7 @@
       Object.entries(skills).forEach(([skill, data]) => {
         const pct = data.total > 0 ? (data.earned / data.total) * 100 : 0;
         const badge = pct >= 70 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
-        const status = pct >= 70 ? 'Mastered' : pct >= 50 ? 'Consolidate' : 'Critical Focus';
+        const status = pct >= 70 ? 'Secure in this Paper' : pct >= 50 ? 'Consolidate' : 'Critical Focus';
         const meta = SKILL_DEFINITIONS[skill] || { label: skill, commandWords: '', focus: '' };
 
         html += `
@@ -967,7 +976,7 @@
       Object.entries(topics).forEach(([topic, data]) => {
         const pct = data.total > 0 ? (data.earned / data.total) * 100 : 0;
         const badge = pct >= 70 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
-        const status = pct >= 70 ? 'Mastered' : pct >= 50 ? 'Consolidate' : 'Critical Focus';
+        const status = pct >= 70 ? 'Secure in this Paper' : pct >= 50 ? 'Consolidate' : 'Critical Focus';
 
         html += `
           <tr class="hover:bg-slate-50 transition">
@@ -1109,7 +1118,7 @@
       const box = document.getElementById('recovery-recommendation-box');
       if (box) {
         if (gap === 0) {
-          box.innerHTML = `<div class="font-bold text-emerald-400">Target Grade '${activeTargetGrade}' Achieved! Current score of ${currentScore}/75 satisfies the threshold. Focus on refining presentation and evaluating question clarity to defend your marks.</div>`;
+          box.innerHTML = `<div class="font-bold text-emerald-400">Target Grade '${activeTargetGrade}' Threshold Met in this Paper (${currentScore}/75). Note: While execution in this paper was secure, continue broad topical revision across varied question formats to prevent blind spots.</div>`;
         } else {
           const droppedQuestions = QUESTIONS.filter(q => {
             const earned = studentScores[q.id] || 0;
@@ -1207,7 +1216,7 @@
       Object.entries(skills).forEach(([skill, data]) => {
         const pct = data.total > 0 ? (data.earned / data.total) * 100 : 0;
         const badge = pct >= 70 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
-        const label = pct >= 70 ? 'Mastered' : pct >= 50 ? 'Consolidate' : 'Priority Attention';
+        const label = pct >= 70 ? 'Secure in this Paper' : pct >= 50 ? 'Consolidate' : 'Priority Attention';
         const info = tips[skill];
 
         html += `
@@ -1313,7 +1322,7 @@
         if (topicAdviceFilter === 'consolidate' && (pct < 50 || pct >= 70)) return;
 
         const badge = pct >= 70 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
-        const label = pct >= 70 ? 'Mastered (≥70%)' : pct >= 50 ? 'Consolidate (50-69%)' : 'Critical Focus (<50%)';
+        const label = pct >= 70 ? 'Secure in this Paper (≥70%)' : pct >= 50 ? 'Consolidate (50-69%)' : 'Critical Focus (<50%)';
 
         html += `
           <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
@@ -1691,59 +1700,194 @@
       }
     }
 
-    function triggerPrint() {
-      const name = document.getElementById('student-name').value.trim() || 'Unassigned Student';
+    function generateReportHtml() {
+      const name = document.getElementById('student-name').value.trim() || 'Student';
       const sClass = document.getElementById('student-class').value.trim() || '-';
       const tutor = document.getElementById('student-tutor').value || '-';
       const score = calculateTotalScore();
       const grade = getGradeFromScore(score);
       const pct = ((score / 75) * 100).toFixed(1);
-
-      document.getElementById('print-name').textContent = name;
-      document.getElementById('print-class').textContent = sClass;
-      document.getElementById('print-tutor').textContent = tutor;
-      document.getElementById('print-date').textContent = new Date().toLocaleDateString('en-SG', { day: '2-digit', month: 'long', year: 'numeric' });
-      document.getElementById('print-score-grade').textContent = `${score} / 75 (${pct}%) — Grade ${grade}`;
+      const formattedDate = new Date().toLocaleDateString('en-SG', { day: '2-digit', month: 'long', year: 'numeric' });
 
       const thinkingSkills = computeThinkingSkillsStats();
-      let thinkingHtml = '';
+      let thinkingRows = '';
       Object.entries(thinkingSkills).forEach(([sk, stat]) => {
         const p = stat.total > 0 ? (stat.earned / stat.total) * 100 : 0;
         const meta = SKILL_DEFINITIONS[sk] || { label: sk, commandWords: '' };
-        thinkingHtml += `
-          <tr>
-            <td class="p-2 font-bold">
-              <div>${meta.label}</div>
-              <div class="text-[9px] text-slate-500 font-normal">Command Words: ${meta.commandWords}</div>
+        const statusClass = p >= 70 ? 'text-emerald-700 font-bold' : p >= 50 ? 'text-amber-700 font-bold' : 'text-rose-700 font-bold';
+        thinkingRows += `
+          <tr class="border-b border-slate-200">
+            <td class="p-2 text-xs">
+              <div class="font-bold text-slate-900">${meta.label}</div>
+              <div class="text-[10px] text-slate-500">Command Words: ${meta.commandWords}</div>
             </td>
-            <td class="p-2 font-mono text-[10px]">${stat.qns.join(', ')}</td>
-            <td class="p-2 text-center font-mono font-bold">${stat.earned} / ${stat.total}</td>
-            <td class="p-2 text-center font-mono">${p.toFixed(0)}%</td>
-            <td class="p-2 text-center font-bold">${p >= 70 ? 'Mastered' : p >= 50 ? 'Consolidate' : 'Priority Attention'}</td>
+            <td class="p-2 font-mono text-[10px] text-slate-600">${stat.qns.join(', ')}</td>
+            <td class="p-2 text-center font-mono font-bold text-xs">${stat.earned} / ${stat.total}</td>
+            <td class="p-2 text-center font-mono font-bold text-xs">${p.toFixed(0)}%</td>
+            <td class="p-2 text-center text-[11px] ${statusClass}">${p >= 70 ? 'Secure in this Paper' : p >= 50 ? 'Consolidate' : 'Priority Attention'}</td>
           </tr>
         `;
       });
-      document.getElementById('print-thinking-tbody').innerHTML = thinkingHtml;
 
       const topics = computeTopicStats();
-      let topicHtml = '';
+      let topicRows = '';
       Object.entries(topics).forEach(([top, stat]) => {
         const p = stat.total > 0 ? (stat.earned / stat.total) * 100 : 0;
-        topicHtml += `
-          <tr>
-            <td class="p-2 font-bold">${top}</td>
-            <td class="p-2 text-center font-mono">${stat.earned} / ${stat.total}</td>
-            <td class="p-2 text-center font-mono font-bold">${p.toFixed(0)}%</td>
-            <td class="p-2 text-[11px]">${p >= 70 ? 'Consolidated: maintain precision in descriptive terminology.' : 'Review governing definitions and rework missed question steps.'}</td>
+        const statusClass = p >= 70 ? 'text-emerald-700 font-bold' : p >= 50 ? 'text-amber-700 font-bold' : 'text-rose-700 font-bold';
+        const advice = p >= 70 
+          ? 'Secure in this question context: maintain precision and test across varied question permutations.' 
+          : p >= 50 
+          ? 'Consolidate: review formula definitions and verify algebraic steps.' 
+          : 'Priority Attention: revisit governing concepts, core laws, and fundamental derivations.';
+        topicRows += `
+          <tr class="border-b border-slate-200">
+            <td class="p-2 font-semibold text-xs text-slate-900">${top}</td>
+            <td class="p-2 text-center font-mono font-bold text-xs">${stat.earned} / ${stat.total}</td>
+            <td class="p-2 text-center font-mono font-bold text-xs ${statusClass}">${p.toFixed(0)}%</td>
+            <td class="p-2 text-[11px] text-slate-600 leading-snug">${advice}</td>
           </tr>
         `;
       });
-      document.getElementById('print-topic-tbody').innerHTML = topicHtml;
 
+      return `
+        <!-- Report Header -->
+        <div class="border-b-2 border-slate-900 pb-4 flex justify-between items-start">
+          <div>
+            <span class="text-[10px] uppercase font-extrabold tracking-wider text-slate-600 block">Jurong Pioneer Junior College</span>
+            <h1 class="text-base sm:text-lg font-black text-slate-900">2026 JC2 H2 Physics Paper 2 (9478/02) Diagnostic Report</h1>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-mono text-slate-500 block">${formattedDate}</span>
+            <span class="text-xs font-bold text-blue-600 block">SEAB Syllabus 9478</span>
+          </div>
+        </div>
+
+        <!-- Student Profile Box -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+          <div><span class="text-slate-400 block text-[10px] uppercase font-bold">Student Name</span><strong class="text-slate-900 text-xs">${name}</strong></div>
+          <div><span class="text-slate-400 block text-[10px] uppercase font-bold">Class</span><strong class="text-slate-900 text-xs font-mono">${sClass}</strong></div>
+          <div><span class="text-slate-400 block text-[10px] uppercase font-bold">Physics Tutor</span><strong class="text-slate-900 text-xs">${tutor}</strong></div>
+          <div><span class="text-slate-400 block text-[10px] uppercase font-bold">Overall Result</span><strong class="text-blue-600 text-xs font-mono font-black">${score} / 75 (${pct}%) — Grade ${grade}</strong></div>
+        </div>
+
+        <!-- Section 1: Thinking Skills Breakdown -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+            <i class="fa-solid fa-brain text-purple-600"></i> 1. Physics Thinking & Question Skills Breakdown
+          </h4>
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-2">Thinking Skill Level</th>
+                  <th class="p-2">Sub-Parts Included</th>
+                  <th class="p-2 text-center">Score / Max</th>
+                  <th class="p-2 text-center">Mastery %</th>
+                  <th class="p-2 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                ${thinkingRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 2: Syllabus Topic Alignment -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+            <i class="fa-solid fa-bullseye text-indigo-600"></i> 2. Syllabus Topic Alignment & Diagnostic Actions
+          </h4>
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-2">Topic</th>
+                  <th class="p-2 text-center">Score</th>
+                  <th class="p-2 text-center">Mastery</th>
+                  <th class="p-2">Remedial Advisory Note</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                ${topicRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-200 text-[10px] text-slate-500 text-center">
+          JPJC Department of Physics &bull; 2026 JC2 Preliminary Examination Paper 2
+        </div>
+      `;
+    }
+
+    function triggerPrint() {
+      const reportHtml = generateReportHtml();
+      
+      // 1. Populate the hidden print container (for standard window.print)
+      const modalCanvas = document.getElementById('modal-report-canvas');
+      if (modalCanvas) modalCanvas.innerHTML = reportHtml;
+
+      const printContainer = document.getElementById('print-report-container');
+      if (printContainer) printContainer.innerHTML = reportHtml;
+
+      // 2. Open the on-screen Print & PDF Export Modal
+      const modal = document.getElementById('print-modal');
+      if (modal) modal.classList.remove('hidden');
+
+      showToast("Diagnostic report prepared! You can review, print, or open in a new tab.", "info");
+    }
+
+    function closePrintModal() {
+      const modal = document.getElementById('print-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function triggerBrowserPrint() {
       try {
         window.print();
       } catch (err) {
-        showToast("Print window blocked. Open in standalone window to print.", "warning");
+        showToast("Embedded print blocked by browser. Opening in new window...", "warning");
+        openPrintInNewWindow();
+      }
+    }
+
+    function openPrintInNewWindow() {
+      const reportHtml = generateReportHtml();
+      const printWindow = window.open('', '_blank', 'width=900,height=1000');
+      
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>2026 JPJC H2 Physics Diagnostic Report</title>
+            <script src="https://cdn.tailwindcss.com"><\/script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+              @page { size: A4; margin: 12mm; }
+              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: white; color: #0f172a; }
+            </style>
+          </head>
+          <body class="p-6">
+            <div class="max-w-3xl mx-auto space-y-6">
+              ${reportHtml}
+            </div>
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                }, 450);
+              };
+            <\/script>
+          </body>
+          </html>
+        `);
+        printWindow.document.close();
+      } else {
+        showToast("Popup blocked. Please allow popups for this site or use Print / Save PDF.", "warning");
       }
     }
 
