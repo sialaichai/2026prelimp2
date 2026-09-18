@@ -686,9 +686,17 @@
     let radarChartInstance = null;
     let barChartInstance = null;
 
+    function initDefaultScores() {
+      const defaults = {};
+      QUESTIONS.forEach(q => {
+        defaults[q.id] = 0;
+      });
+      return defaults;
+    }
+
     function sanitizeScores(rawScores) {
-      if (!rawScores || typeof rawScores !== 'object') return {};
-      const clean = {};
+      const clean = initDefaultScores();
+      if (!rawScores || typeof rawScores !== 'object') return clean;
       QUESTIONS.forEach(q => {
         if (rawScores[q.id] !== undefined && rawScores[q.id] !== null && rawScores[q.id] !== '') {
           const num = Number(rawScores[q.id]);
@@ -701,6 +709,7 @@
     }
 
     window.onload = function() {
+      studentScores = initDefaultScores();
       loadSavedSession();
       renderQuestionInputCards();
       updateAllCalculations();
@@ -713,7 +722,11 @@
         const savedErrors = localStorage.getItem('jpjc_student_errors');
         const savedParticulars = localStorage.getItem('jpjc_student_particulars');
 
-        if (savedScores) studentScores = sanitizeScores(JSON.parse(savedScores));
+        if (savedScores) {
+          studentScores = sanitizeScores(JSON.parse(savedScores));
+        } else {
+          studentScores = initDefaultScores();
+        }
         if (savedErrors) studentErrors = JSON.parse(savedErrors);
         if (savedParticulars) {
           const p = JSON.parse(savedParticulars);
@@ -776,7 +789,7 @@
         `;
 
         groupQuestions.forEach(q => {
-          const currentScore = studentScores[q.id] !== undefined ? studentScores[q.id] : '';
+          const currentScore = studentScores[q.id] !== undefined ? studentScores[q.id] : 0;
           const currentErr = studentErrors[q.id] || '';
 
           let markButtons = '';
@@ -1945,20 +1958,20 @@
     function confirmResetPaper() {
       if (!resetConfirmationPending) {
         resetConfirmationPending = true;
-        showToast("Click 'Reset' again within 4 seconds to confirm erasing marks.", "warning");
+        showToast("Click 'Reset' again within 4 seconds to confirm resetting all marks to 0.", "warning");
         setTimeout(() => { resetConfirmationPending = false; }, 4000);
         return;
       }
 
       resetConfirmationPending = false;
-      studentScores = {};
+      studentScores = initDefaultScores();
       studentErrors = {};
-      localStorage.removeItem('jpjc_student_scores');
+      localStorage.setItem('jpjc_student_scores', JSON.stringify(studentScores));
       localStorage.removeItem('jpjc_student_errors');
       renderQuestionInputCards();
       updateAllCalculations();
       updateAnalyticsCharts();
-      showToast("All marks and answers have been reset.", "info");
+      showToast("All marks have been reset to zero.", "info");
     }
 
     function showToast(message, type = 'info') {
