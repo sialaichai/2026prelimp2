@@ -379,69 +379,143 @@
             </div>
           </div>
 
-          <!-- Cohort Metrics Cards -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Total Submissions</span>
-              <span id="metric-total-subs" class="text-2xl font-black font-mono text-slate-900">0</span>
-            </div>
-            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Cohort Mean Score</span>
-              <div class="flex items-baseline gap-1">
-                <span id="metric-mean-score" class="text-2xl font-black font-mono text-blue-600">0.0</span>
-                <span class="text-[10px] text-slate-400">/ 75</span>
+          <!-- Multi-Criteria Filter Controls: Tutor + Class + Search -->
+          <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-bold text-slate-700"><i class="fa-solid fa-user-tie text-indigo-500 mr-1"></i>Tutor:</label>
+                <select id="teacher-tutor-filter" onchange="applyTeacherDashboardFilters()" class="text-xs px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                  <option value="ALL">All Tutors</option>
+                  <option value="Mr Lee">Mr Lee</option>
+                  <option value="Mr Oh">Mr Oh</option>
+                  <option value="Mr Pang">Mr Pang</option>
+                  <option value="Mr Sia">Mr Sia</option>
+                  <option value="Mr Tan">Mr Tan</option>
+                </select>
               </div>
-            </div>
-            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Distinction Rate</span>
-              <span id="metric-distinction-rate" class="text-2xl font-black font-mono text-indigo-600">0.0%</span>
-              <span class="text-[10px] text-slate-400 block">(Score &ge; 53)</span>
-            </div>
-            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Pass Rate (&ge; E)</span>
-              <span id="metric-pass-rate" class="text-2xl font-black font-mono text-emerald-600">0.0%</span>
-              <span class="text-[10px] text-slate-400 block">(Score &ge; 34)</span>
-            </div>
-          </div>
-
-          <!-- Roster Filter Controls -->
-          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <div class="flex items-center gap-2">
-              <label class="text-xs font-bold text-slate-600">Filter by Tutor:</label>
-              <select id="teacher-tutor-filter" onchange="renderCohortTable()" class="text-xs px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium focus:ring-1 focus:ring-indigo-500 outline-none">
-                <option value="ALL">All Tutors</option>
-                <option value="Mr Lee">Mr Lee</option>
-                <option value="Mr Oh">Mr Oh</option>
-                <option value="Mr Pang">Mr Pang</option>
-                <option value="Mr Sia">Mr Sia</option>
-                <option value="Mr Tan">Mr Tan</option>
-              </select>
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-bold text-slate-700"><i class="fa-solid fa-users-rectangle text-blue-500 mr-1"></i>Class:</label>
+                <select id="teacher-class-filter" onchange="applyTeacherDashboardFilters()" class="text-xs px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                  <option value="ALL">All Classes</option>
+                </select>
+              </div>
             </div>
             <div class="relative w-full sm:w-64">
               <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-              <input type="text" id="roster-search" placeholder="Search student name or class..." oninput="renderCohortTable()" class="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 focus:ring-1 focus:ring-indigo-500 outline-none">
+              <input type="text" id="roster-search" placeholder="Search student name..." oninput="applyTeacherDashboardFilters()" class="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+          </div>
+
+          <!-- Filtered Group Summary Statistics Cards -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-line text-blue-600"></i> Filtered Group Summary Statistics
+              </span>
+              <span id="filtered-group-indicator" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                All Students (0)
+              </span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Filtered Students</span>
+                <span id="metric-total-subs" class="text-2xl font-black font-mono text-slate-900">0</span>
+              </div>
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Group Mean Score</span>
+                <div class="flex items-baseline gap-1">
+                  <span id="metric-mean-score" class="text-2xl font-black font-mono text-blue-600">0.0</span>
+                  <span class="text-[10px] text-slate-400">/ 75</span>
+                </div>
+              </div>
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Distinction Rate</span>
+                <span id="metric-distinction-rate" class="text-2xl font-black font-mono text-indigo-600">0.0%</span>
+                <span class="text-[10px] text-slate-400 block">(Score &ge; 53m)</span>
+              </div>
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Pass Rate (&ge; E)</span>
+                <span id="metric-pass-rate" class="text-2xl font-black font-mono text-emerald-600">0.0%</span>
+                <span class="text-[10px] text-slate-400 block">(Score &ge; 34m)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filtered Group Root-Cause Mark Leak Diagnosis Card -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+              <div>
+                <h4 class="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-stethoscope text-rose-600"></i> Group Mark Leak Root-Cause Diagnosis
+                </h4>
+                <p class="text-[11px] text-slate-500">Aggregated breakdown of student-identified error causes across all questions for the filtered group</p>
+              </div>
+              <span id="group-leak-total-badge" class="text-[11px] font-mono font-bold text-slate-600 bg-white px-2.5 py-0.5 rounded-full border border-slate-200">
+                0 total tagged leaks
+              </span>
+            </div>
+            <div id="group-leak-causes-container" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <!-- Dynamically populated by renderGroupRootCauses -->
+            </div>
+          </div>
+
+          <!-- Filtered Group Bloom's / Thinking & Cognitive Skills Mastery -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+              <h4 class="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-2">
+                <i class="fa-solid fa-brain text-purple-600"></i> Group Performance by Thinking & Question Skills (Bloom Levels)
+              </h4>
+              <span class="text-[11px] text-slate-500">Group mastery averaged across all filtered students</span>
+            </div>
+            <div id="group-skills-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Group Item Analysis by Question Sub-Part (32 Sub-parts) -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+              <div>
+                <h4 class="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-list-ol text-blue-600"></i> Group Sub-Part Facility Rate & Error Analysis (32 Questions)
+                </h4>
+                <p class="text-[11px] text-slate-500">Facility rate = Group average score &divide; Maximum question marks</p>
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px]">
+                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">&ge;70% Secure</span>
+                <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">50-69% Consolidate</span>
+                <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold">&lt;50% Critical</span>
+              </div>
+            </div>
+            <div id="group-items-container" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 max-h-72 overflow-y-auto p-1">
+              <!-- Dynamically populated by renderGroupItemAnalysis -->
             </div>
           </div>
 
           <!-- Student Roster Table -->
-          <div class="overflow-x-auto border border-slate-200 rounded-xl">
-            <table class="w-full text-left text-xs border-collapse">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="py-3 px-3.5">Student Name</th>
-                  <th class="py-3 px-3.5">Class</th>
-                  <th class="py-3 px-3.5">Tutor</th>
-                  <th class="py-3 px-3.5 text-center">Score / 75</th>
-                  <th class="py-3 px-3.5 text-center">%</th>
-                  <th class="py-3 px-3.5 text-center">Grade</th>
-                  <th class="py-3 px-3.5">Submitted At</th>
-                  <th class="py-3 px-3.5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="cohort-table-body" class="divide-y divide-slate-100">
-                <!-- Dynamically rendered -->
-              </tbody>
-            </table>
+          <div class="space-y-2">
+            <h4 class="font-bold text-slate-900 text-xs flex items-center gap-2">
+              <i class="fa-solid fa-table-list text-slate-600"></i> Filtered Student Roster
+            </h4>
+            <div class="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                  <tr>
+                    <th class="py-3 px-3.5">Student Name</th>
+                    <th class="py-3 px-3.5">Class</th>
+                    <th class="py-3 px-3.5">Tutor</th>
+                    <th class="py-3 px-3.5 text-center">Score / 75</th>
+                    <th class="py-3 px-3.5 text-center">%</th>
+                    <th class="py-3 px-3.5 text-center">Grade</th>
+                    <th class="py-3 px-3.5">Submitted At</th>
+                    <th class="py-3 px-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="cohort-table-body" class="divide-y divide-slate-100">
+                  <!-- Dynamically rendered -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -504,6 +578,39 @@
         </thead>
         <tbody id="print-topic-tbody" class="divide-y divide-slate-200"></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Print Preview & PDF Modal -->
+  <div id="print-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-print"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm leading-tight">Official Diagnostic Report Preview</h3>
+            <p class="text-[11px] text-slate-300">Review, print or export directly</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="triggerBrowserPrint()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-print"></i> Print / Save PDF
+          </button>
+          <button type="button" onclick="openPrintInNewWindow()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open in New Window
+          </button>
+          <button type="button" onclick="closePrintModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
+        <div id="modal-report-canvas" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
+          <!-- Populated by triggerPrint() -->
+        </div>
+      </div>
     </div>
   </div>
 
@@ -675,11 +782,10 @@
       }
     };
 
-    // State
+    // State Variables
     let studentScores = {};
     let studentErrors = {};
     let activeTargetGrade = 'A';
-    let currentTutorFilter = 'ALL';
     let cohortSubmissions = [];
     let authenticatedTeacherPin = null;
 
@@ -1493,8 +1599,8 @@
         document.getElementById('teacher-dashboard').classList.remove('hidden');
         document.getElementById('teacher-tab-lock-icon').className = 'fa-solid fa-lock-open text-emerald-500';
 
-        renderCohortTable();
-        updateCohortMetrics();
+        populateTeacherClassFilter();
+        applyTeacherDashboardFilters();
 
       } catch (err) {
         console.error("Auth fetch error:", err);
@@ -1517,8 +1623,8 @@
         const result = await response.json();
         if (Array.isArray(result)) {
           cohortSubmissions = result;
-          renderCohortTable();
-          updateCohortMetrics();
+          populateTeacherClassFilter();
+          applyTeacherDashboardFilters();
           if (isManual) showToast("Cohort roster refreshed from Google Sheet.", "success");
         }
       } catch (err) {
@@ -1537,10 +1643,121 @@
       document.getElementById('teacher-tab-lock-icon').className = 'fa-solid fa-lock text-amber-500';
     }
 
-    function updateCohortMetrics() {
-      const total = cohortSubmissions.length;
-      document.getElementById('cohort-badge').textContent = total;
+    function populateTeacherClassFilter() {
+      const classSelect = document.getElementById('teacher-class-filter');
+      if (!classSelect) return;
+
+      const currentSelected = classSelect.value || 'ALL';
+      const classesSet = new Set();
+      cohortSubmissions.forEach(s => {
+        if (s.studentClass && String(s.studentClass).trim() && s.studentClass !== '-') {
+          classesSet.add(String(s.studentClass).trim());
+        }
+      });
+
+      const sortedClasses = Array.from(classesSet).sort();
+      let optionsHtml = '<option value="ALL">All Classes</option>';
+      sortedClasses.forEach(cls => {
+        const isSelected = (cls === currentSelected) ? 'selected' : '';
+        optionsHtml += `<option value="${cls}" ${isSelected}>Class ${cls}</option>`;
+      });
+
+      classSelect.innerHTML = optionsHtml;
+    }
+
+    function getFilteredCohortSubmissions() {
+      const tutorFilter = document.getElementById('teacher-tutor-filter') ? document.getElementById('teacher-tutor-filter').value : 'ALL';
+      const classFilter = document.getElementById('teacher-class-filter') ? document.getElementById('teacher-class-filter').value : 'ALL';
+      const search = (document.getElementById('roster-search') ? document.getElementById('roster-search').value : '').toLowerCase().trim();
+
+      return cohortSubmissions.filter(s => {
+        const matchTutor = (tutorFilter === 'ALL' || s.studentTutor === tutorFilter);
+        const matchClass = (classFilter === 'ALL' || String(s.studentClass || '').trim().toLowerCase() === classFilter.toLowerCase());
+        const matchSearch = (!search || (s.studentName && s.studentName.toLowerCase().includes(search)) || (s.studentClass && s.studentClass.toLowerCase().includes(search)));
+        return matchTutor && matchClass && matchSearch;
+      });
+    }
+
+    let activeFilteredSubmissions = [];
+    function applyTeacherDashboardFilters() {
+      activeFilteredSubmissions = getFilteredCohortSubmissions();
+      updateCohortMetrics(activeFilteredSubmissions);
+      renderGroupRootCauses(activeFilteredSubmissions);
+      renderGroupThinkingSkills(activeFilteredSubmissions);
+      renderGroupItemAnalysis(activeFilteredSubmissions);
+      renderCohortTable(activeFilteredSubmissions);
+    }
+
+    function renderGroupRootCauses(filtered) {
+      const container = document.getElementById('group-leak-causes-container');
+      const totalBadge = document.getElementById('group-leak-total-badge');
+      if (!container) return;
+
+      const counts = { careless: 0, recall: 0, concept: 0, command: 0, time: 0 };
+      let totalLeaks = 0;
+
+      filtered.forEach(s => {
+        if (s.errorReasons && typeof s.errorReasons === 'object') {
+          Object.values(s.errorReasons).forEach(err => {
+            if (counts[err] !== undefined) {
+              counts[err]++;
+              totalLeaks++;
+            }
+          });
+        }
+      });
+
+      if (totalBadge) {
+        const avgPerStudent = filtered.length > 0 ? (totalLeaks / filtered.length).toFixed(1) : '0.0';
+        totalBadge.textContent = `${totalLeaks} total tagged leaks (${avgPerStudent} / student avg)`;
+      }
+
+      const leakMeta = [
+        { key: 'careless', label: 'Careless / Math', icon: 'fa-calculator', text: 'text-slate-900', bg: 'bg-white', border: 'border-slate-200', barBg: 'bg-slate-700' },
+        { key: 'recall', label: 'Recall / Defs', icon: 'fa-brain', text: 'text-amber-600', bg: 'bg-amber-50/40', border: 'border-amber-200', barBg: 'bg-amber-500' },
+        { key: 'concept', label: 'Concept Leak', icon: 'fa-lightbulb', text: 'text-rose-600', bg: 'bg-rose-50/40', border: 'border-rose-200', barBg: 'bg-rose-500' },
+        { key: 'command', label: 'Keywords Missing', icon: 'fa-key', text: 'text-purple-600', bg: 'bg-purple-50/40', border: 'border-purple-200', barBg: 'bg-purple-500' },
+        { key: 'time', label: 'Time Deficit', icon: 'fa-stopwatch', text: 'text-blue-600', bg: 'bg-blue-50/40', border: 'border-blue-200', barBg: 'bg-blue-500' }
+      ];
+
+      let html = '';
+      leakMeta.forEach(m => {
+        const count = counts[m.key];
+        const pct = totalLeaks > 0 ? ((count / totalLeaks) * 100).toFixed(1) : '0.0';
+        html += `
+          <div class="p-3 rounded-xl ${m.bg} border ${m.border} flex flex-col justify-between shadow-xs">
+            <div class="flex items-center justify-between text-[10px] uppercase font-bold text-slate-500 mb-1">
+              <span class="flex items-center gap-1"><i class="fa-solid ${m.icon}"></i> ${m.label}</span>
+              <span class="font-mono text-slate-400">${pct}%</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+              <span class="text-2xl font-black font-mono ${m.text}">${count}</span>
+              <span class="text-[10px] text-slate-400 font-medium">instances</span>
+            </div>
+            <div class="w-full bg-slate-200/70 rounded-full h-1.5 mt-2.5 overflow-hidden">
+              <div class="h-1.5 rounded-full ${m.barBg}" style="width: ${Math.min(100, Number(pct))}%"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function updateCohortMetrics(filtered) {
+      const total = filtered.length;
+      document.getElementById('cohort-badge').textContent = cohortSubmissions.length;
       document.getElementById('metric-total-subs').textContent = total;
+
+      const tutorFilter = document.getElementById('teacher-tutor-filter').value;
+      const classFilter = document.getElementById('teacher-class-filter').value;
+      const indicator = document.getElementById('filtered-group-indicator');
+      if (indicator) {
+        let label = `Filtered: ${total} Students`;
+        if (tutorFilter !== 'ALL') label += ` • ${tutorFilter}`;
+        if (classFilter !== 'ALL') label += ` • Class ${classFilter}`;
+        indicator.textContent = label;
+      }
 
       if (total === 0) {
         document.getElementById('metric-mean-score').textContent = '0.0';
@@ -1553,7 +1770,7 @@
       let distinctions = 0;
       let passes = 0;
 
-      cohortSubmissions.forEach(s => {
+      filtered.forEach(s => {
         const score = Number(s.totalScore) || 0;
         sumScore += score;
         if (score >= 53) distinctions++;
@@ -1569,18 +1786,122 @@
       document.getElementById('metric-pass-rate').textContent = passRate + '%';
     }
 
-    function renderCohortTable() {
+    function renderGroupThinkingSkills(filtered) {
+      const container = document.getElementById('group-skills-container');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-4 text-center text-xs text-slate-400">No student submissions available for the selected filter.</div>`;
+        return;
+      }
+
+      const skillsMap = {
+        'Recall': { earned: 0, maxPerStudent: 7, label: 'Recall / Define', color: 'purple' },
+        'Understand': { earned: 0, maxPerStudent: 7, label: 'Interpret / Describe', color: 'blue' },
+        'Apply': { earned: 0, maxPerStudent: 33, label: 'Calculate / Apply', color: 'emerald' },
+        'Analyse': { earned: 0, maxPerStudent: 26, label: 'Derive / Analyze', color: 'indigo' },
+        'Evaluate': { earned: 0, maxPerStudent: 2, label: 'Justify / Evaluate', color: 'rose' }
+      };
+
+      filtered.forEach(s => {
+        const scores = sanitizeScores(s.scores || {});
+        QUESTIONS.forEach(q => {
+          if (skillsMap[q.bloom]) {
+            skillsMap[q.bloom].earned += (scores[q.id] || 0);
+          }
+        });
+      });
+
+      let html = '';
+      Object.entries(skillsMap).forEach(([skill, meta]) => {
+        const groupMax = meta.maxPerStudent * filtered.length;
+        const avgScore = (meta.earned / filtered.length).toFixed(1);
+        const masteryPct = groupMax > 0 ? (meta.earned / groupMax) * 100 : 0;
+        const badgeColor = masteryPct >= 70 ? 'bg-emerald-100 text-emerald-800' : masteryPct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
+
+        html += `
+          <div class="p-3 rounded-xl bg-white border border-slate-200 shadow-xs space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-800">${meta.label}</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ${badgeColor}">${masteryPct.toFixed(0)}%</span>
+            </div>
+            <div class="flex items-baseline justify-between text-xs">
+              <span class="text-slate-500 font-medium">Group Mean:</span>
+              <span class="font-mono font-bold text-slate-900">${avgScore} / ${meta.maxPerStudent}m</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${Math.min(100, masteryPct)}%"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderGroupItemAnalysis(filtered) {
+      const container = document.getElementById('group-items-container');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-4 text-center text-xs text-slate-400">No question data available for current filter.</div>`;
+        return;
+      }
+
+      let html = '';
+      QUESTIONS.forEach(q => {
+        let totalQuestionScore = 0;
+        const errCount = { careless: 0, recall: 0, concept: 0, command: 0, time: 0 };
+
+        filtered.forEach(s => {
+          const scores = sanitizeScores(s.scores || {});
+          totalQuestionScore += (scores[q.id] || 0);
+
+          if (s.errorReasons && s.errorReasons[q.id]) {
+            const errKey = s.errorReasons[q.id];
+            if (errCount[errKey] !== undefined) errCount[errKey]++;
+          }
+        });
+
+        const avgScore = (totalQuestionScore / filtered.length).toFixed(1);
+        const facilityPct = (totalQuestionScore / (q.max * filtered.length)) * 100;
+        const cardBg = facilityPct >= 70 ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900' : facilityPct >= 50 ? 'bg-amber-50/70 border-amber-200 text-amber-900' : 'bg-rose-50/70 border-rose-200 text-rose-900';
+
+        let topErr = null;
+        let topErrMax = 0;
+        Object.entries(errCount).forEach(([err, cnt]) => {
+          if (cnt > topErrMax) {
+            topErrMax = cnt;
+            topErr = err;
+          }
+        });
+
+        const errLabels = { careless: 'Math', recall: 'Def', concept: 'Concept', command: 'Keyword', time: 'Time' };
+        const topErrBadge = topErr ? `<span class="text-[9px] px-1 py-0.2 rounded bg-white/80 border border-slate-200 font-mono text-slate-600">${errLabels[topErr]} (${topErrMax})</span>` : '';
+
+        html += `
+          <div class="p-2 rounded-xl border ${cardBg} flex flex-col justify-between space-y-1 transition hover:shadow-xs">
+            <div class="flex items-center justify-between">
+              <span class="font-mono font-extrabold text-[11px]">${q.title}</span>
+              <span class="font-mono text-[10px] font-black">${facilityPct.toFixed(0)}%</span>
+            </div>
+            <div class="text-[10px] font-mono text-slate-600 flex items-baseline justify-between">
+              <span>Avg:</span>
+              <span class="font-bold">${avgScore}/${q.max}m</span>
+            </div>
+            <div class="pt-0.5 flex justify-end">
+              ${topErrBadge || '<span class="text-[9px] text-slate-400 font-mono">-</span>'}
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderCohortTable(filtered = activeFilteredSubmissions) {
       const tbody = document.getElementById('cohort-table-body');
       if (!tbody) return;
-
-      const tutorFilter = document.getElementById('teacher-tutor-filter').value;
-      const search = (document.getElementById('roster-search').value || '').toLowerCase().trim();
-
-      const filtered = cohortSubmissions.filter(s => {
-        const matchTutor = (tutorFilter === 'ALL' || s.studentTutor === tutorFilter);
-        const matchSearch = (!search || (s.studentName && s.studentName.toLowerCase().includes(search)) || (s.studentClass && s.studentClass.toLowerCase().includes(search)));
-        return matchTutor && matchSearch;
-      });
 
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400 text-xs">No matching student submissions found.</td></tr>`;
@@ -1837,14 +2158,12 @@
     function triggerPrint() {
       const reportHtml = generateReportHtml();
       
-      // 1. Populate the hidden print container (for standard window.print)
       const modalCanvas = document.getElementById('modal-report-canvas');
       if (modalCanvas) modalCanvas.innerHTML = reportHtml;
 
       const printContainer = document.getElementById('print-report-container');
       if (printContainer) printContainer.innerHTML = reportHtml;
 
-      // 2. Open the on-screen Print & PDF Export Modal
       const modal = document.getElementById('print-modal');
       if (modal) modal.classList.remove('hidden');
 
