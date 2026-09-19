@@ -935,9 +935,9 @@
                   <option value="">Error Cause...</option>
                   <option value="careless" ${currentErr === 'careless' ? 'selected' : ''}>Careless / Math</option>
                   <option value="recall" ${currentErr === 'recall' ? 'selected' : ''}>Recall / Definition</option>
-                  <option value="concept" ${currentErr === 'concept' ? 'selected' : ''}>Concept / Principle</option>
-                  <option value="command" ${currentErr === 'command' ? 'selected' : ''}>Command Word / Keywords</option>
-                  <option value="time" ${currentErr === 'time' ? 'selected' : ''}>Time Pressure</option>
+                  <option value="concept" ${currentErr === 'concept' ? 'selected' : ''}>Wrong Concept / Principle / Formula</option>
+                  <option value="command" ${currentErr === 'command' ? 'selected' : ''}>Missing / Wrong Keywords</option>
+                  <option value="time" ${currentErr === 'time' ? 'selected' : ''}>Blank / Time Pressure</option>
                 </select>
               </div>
             </div>
@@ -1276,15 +1276,15 @@
             <span class="text-lg font-black font-mono text-amber-600">${counts.recall}</span>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-            <span class="text-[10px] uppercase font-bold text-slate-500 block">Concept Leak</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Wrong Concept / Principle / Formula</span>
             <span class="text-lg font-black font-mono text-rose-600">${counts.concept}</span>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-            <span class="text-[10px] uppercase font-bold text-slate-500 block">Keywords Missing</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Missing / Wrong Keywords</span>
             <span class="text-lg font-black font-mono text-purple-600">${counts.command}</span>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-            <span class="text-[10px] uppercase font-bold text-slate-500 block">Time Deficit</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Blank / Time Pressure</span>
             <span class="text-lg font-black font-mono text-blue-600">${counts.time}</span>
           </div>
         `;
@@ -1715,9 +1715,9 @@
       const leakMeta = [
         { key: 'careless', label: 'Careless / Math', icon: 'fa-calculator', text: 'text-slate-900', bg: 'bg-white', border: 'border-slate-200', barBg: 'bg-slate-700' },
         { key: 'recall', label: 'Recall / Defs', icon: 'fa-brain', text: 'text-amber-600', bg: 'bg-amber-50/40', border: 'border-amber-200', barBg: 'bg-amber-500' },
-        { key: 'concept', label: 'Concept Leak', icon: 'fa-lightbulb', text: 'text-rose-600', bg: 'bg-rose-50/40', border: 'border-rose-200', barBg: 'bg-rose-500' },
-        { key: 'command', label: 'Keywords Missing', icon: 'fa-key', text: 'text-purple-600', bg: 'bg-purple-50/40', border: 'border-purple-200', barBg: 'bg-purple-500' },
-        { key: 'time', label: 'Time Deficit', icon: 'fa-stopwatch', text: 'text-blue-600', bg: 'bg-blue-50/40', border: 'border-blue-200', barBg: 'bg-blue-500' }
+        { key: 'concept', label: 'Wrong Concept / Principle / Formula', icon: 'fa-lightbulb', text: 'text-rose-600', bg: 'bg-rose-50/40', border: 'border-rose-200', barBg: 'bg-rose-500' },
+        { key: 'command', label: 'Missing / Wrong Keywords', icon: 'fa-key', text: 'text-purple-600', bg: 'bg-purple-50/40', border: 'border-purple-200', barBg: 'bg-purple-500' },
+        { key: 'time', label: 'Blank / Time Pressure', icon: 'fa-stopwatch', text: 'text-blue-600', bg: 'bg-blue-50/40', border: 'border-blue-200', barBg: 'bg-blue-500' }
       ];
 
       let html = '';
@@ -1876,7 +1876,7 @@
           }
         });
 
-        const errLabels = { careless: 'Math', recall: 'Def', concept: 'Concept', command: 'Keyword', time: 'Time' };
+        const errLabels = { careless: 'Math', recall: 'Def', concept: 'Wrong Concept', command: 'Keywords', time: 'Blank / Time' };
         const topErrBadge = topErr ? `<span class="text-[9px] px-1 py-0.2 rounded bg-white/80 border border-slate-200 font-mono text-slate-600">${errLabels[topErr]} (${topErrMax})</span>` : '';
 
         html += `
